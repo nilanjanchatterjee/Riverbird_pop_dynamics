@@ -112,7 +112,7 @@ for(i in 1:length(data_files))
   ) 
   
   ## ----build open nmixture---------------------------------------------------------
-  dynamic_nmix_mod <- pcountOpen(lambdaformula= ~alt+flow+wor,
+  dynamic_nmix_mod <- pcountOpen(lambdaformula= ~scale(alt)+flow+wor,
                                  gammaformula = ~1,
                                  omegaformula = ~1,
                                  pformula = ~1,
@@ -132,27 +132,39 @@ setwd("~/Documents/GitHub/Riverbird_Nmixture")
 
 abd_cmbnd <-do.call(rbind, sp_abd)
 abd_cmbnd$species<- gsub("_multi.csv", "",abd_cmbnd$species)
+head(abd_cmbnd)
 write.csv(abd_cmbnd, "./Results/All_species_abundance_combined.csv", row.names = F)
+
 coef_cmbnd <-do.call(rbind, sp_sum)
 colnames(coef_cmbnd)[1] <- c("species")
 coef_cmbnd$species<- gsub("_multi.csv", "",coef_cmbnd$species)
 coef_cmbnd$variable <- rep(rownames(coef_cmbnd)[1:7], 12)
 coef_cmbnd$variable <- gsub("det", "det_prob",coef_cmbnd$variable)
 coef_cmbnd$variable <- gsub("lambda.(Intercept)", "lambda_intrcpt",coef_cmbnd$variable, fixed = TRUE)
+coef_cmbnd$variable <- gsub("lambda_elevation", "lambda_elev",coef_cmbnd$variable, fixed = TRUE)
+coef_cmbnd$species[coef_cmbnd$species=="BD"] <- "Brown_Dipper"
+coef_cmbnd$species[coef_cmbnd$species=="WTK"] <- "White_Thraoted_Kingfisher"
+coef_cmbnd$species[coef_cmbnd$species=="BWT"] <- "Blue_Whistling_Thrush"
+coef_cmbnd$species[coef_cmbnd$species=="CK"] <- "Crested_Kingfisher"
+coef_cmbnd$species[coef_cmbnd$species=="GW"] <- "Grey_Wagtail"
+coef_cmbnd$species[coef_cmbnd$species=="LF"] <- "Little_Forktail"
+coef_cmbnd$species[coef_cmbnd$species=="PWR"] <- "Plumbeous_Water_Redstart"
+coef_cmbnd$species[coef_cmbnd$species=="SF"] <- "Spotted_Forktail"
+coef_cmbnd$species[coef_cmbnd$species=="WCR"] <- "White_capped_Redstart"
 write.csv(coef_cmbnd, "./Results/All_species_coef_combined.csv", row.names = F)
 
 ##plot
-  ggplot(abd_cmbnd, aes(x = year, y = mean/43)) +
+  ggplot(abd_cmbnd, aes(x = year, y = mean1/43)) +
   geom_errorbar(aes(ymin = V1/43,
                     ymax = V2/43),
                 width = 0) +
-  geom_point(size = 3) +
+  geom_point(size = 2) +
   geom_line() +
     facet_wrap(~species, scales = "free")+
   labs(x = "Year", y = "Estimated Density per 500m") +
   theme_bw()
 
-  ggsave("All_species_abundance.jpeg", width=12, height=9, units = "in", dpi=300)  
+ggsave("./Results/All_species_abundance_new.jpeg", width=12, height=9, units = "in", dpi=300)  
   
   ggplot(coef_cmbnd, aes(x= variable, y = Estimate))+
     geom_errorbar(aes(ymin = Estimate -1.96*SE,
@@ -162,10 +174,10 @@ write.csv(coef_cmbnd, "./Results/All_species_coef_combined.csv", row.names = F)
     geom_hline(yintercept = 0, linetype = "dashed")+
     facet_wrap(~species, scales = "free")+
     labs(x = "Variable", y = "Coefficient Estimate") +
-    coord_cartesian(ylim = c(-5,5))+
+    coord_cartesian(ylim = c(-4,4))+
     theme_bw()+
     theme(axis.title = element_text(size=16), axis.text = element_text(size=10),
           axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0))
   
-  ggsave("./Results/All_species_coef.jpeg", width=12, height=9, units = "in", dpi=300)  
+  ggsave("./Results/All_species_coef_new.jpeg", width=12, height=9, units = "in", dpi=300)  
   
