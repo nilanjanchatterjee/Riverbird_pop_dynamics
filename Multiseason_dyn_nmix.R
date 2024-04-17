@@ -97,6 +97,7 @@ data_files <-list.files("./Data/")
 
 sp_sum <- list()
 sp_abd <- list()
+sp_sum_zip <- list()
 
 setwd("./Data/")
 # Load covariate data
@@ -112,14 +113,24 @@ for(i in 1:length(data_files))
   ) 
   
   ## ----build open nmixture---------------------------------------------------------
-  dynamic_nmix_mod <- pcountOpen(lambdaformula= ~scale(alt)+flow+wor,
+  dynamic_nmix_mod_p <- pcountOpen(lambdaformula= ~scale(alt)+flow+wor,
                                  gammaformula = ~1,
                                  omegaformula = ~1,
                                  pformula = ~1,
-                                 data = unmarked_Frame,    method = "BFGS", K=50)
+                                 data = unmarked_Frame,    method = "BFGS", K=50, mixture = c("P"))
  
- sp_unmk_sum <- summary(dynamic_nmix_mod)
+ dynamic_nmix_mod_zip <- pcountOpen(lambdaformula= ~scale(alt)+flow+wor, 
+                                    gammaformula = ~1,
+                                    omegaformula = ~1,
+                                    pformula = ~1,
+                                    data = unmarked_Frame,    method = "BFGS", K=50, mixture = c("ZIP"))
+ 
+ print(AIC(dynamic_nmix_mod_p, dynamic_nmix_mod_zip))
+ sp_unmk_sum <- summary(dynamic_nmix_mod_p)
  sp_sum[[i]] <- cbind(paste(data_files[i]), do.call(rbind, sp_unmk_sum))
+ 
+ sp_unmk_sum_zip <- summary(dynamic_nmix_mod_zip)
+ sp_sum_zip[[i]] <- cbind(paste(data_files[i]), do.call(rbind, sp_unmk_sum_zip))
  
  #### Abundance estimate
  abd_est <- data_frame(year = 2014:2018, species = paste(data_files[i]))
@@ -152,6 +163,11 @@ coef_cmbnd$species[coef_cmbnd$species=="PWR"] <- "Plumbeous_Water_Redstart"
 coef_cmbnd$species[coef_cmbnd$species=="SF"] <- "Spotted_Forktail"
 coef_cmbnd$species[coef_cmbnd$species=="WCR"] <- "White_capped_Redstart"
 write.csv(coef_cmbnd, "./Results/All_species_coef_combined.csv", row.names = F)
+
+coef_cmbnd_zip <-do.call(rbind, sp_sum_zip)
+colnames(coef_cmbnd_zip)[1] <- c("species")
+coef_cmbnd_zip$species<- gsub("_multi.csv", "",coef_cmbnd_zip$species)
+write.csv(coef_cmbnd_zip, "./Results/All_species_coef_zip_combined.csv", row.names = F)
 
 ##plot
   ggplot(abd_cmbnd, aes(x = year, y = mean1/43)) +
