@@ -127,6 +127,7 @@ for(i in 1:length(data_files))
  
  print(AIC(dynamic_nmix_mod_p, dynamic_nmix_mod_zip))
  sp_unmk_sum <- summary(dynamic_nmix_mod_p)
+ print(backTransform(dynamic_nmix_mod_p,type="det"))
  sp_sum[[i]] <- cbind(paste(data_files[i]), do.call(rbind, sp_unmk_sum))
  
  sp_unmk_sum_zip <- summary(dynamic_nmix_mod_zip)
@@ -169,6 +170,7 @@ colnames(coef_cmbnd_zip)[1] <- c("species")
 coef_cmbnd_zip$species<- gsub("_multi.csv", "",coef_cmbnd_zip$species)
 write.csv(coef_cmbnd_zip, "./Results/All_species_coef_zip_combined.csv", row.names = F)
 
+
 ##plot
   ggplot(abd_cmbnd, aes(x = year, y = mean1/43)) +
   geom_errorbar(aes(ymin = V1/43,
@@ -176,11 +178,16 @@ write.csv(coef_cmbnd_zip, "./Results/All_species_coef_zip_combined.csv", row.nam
                 width = 0) +
   geom_point(size = 2) +
   geom_line() +
-    facet_wrap(~species, scales = "free")+
+    facet_wrap(~factor(species, levels =c("Brown_Dipper"   ,   "Crested_Kingfisher" , "Little_Forktail" ,         
+                                          "Plumbeous_Water_Redstart" , "Spotted_Forktail" ,  "White_capped_Redstart" ,     
+                                          "Blue_Whistling_Thrush" , "Common_Kingfisher" , "Grey_Wagtail" ,                
+                                          "White browed Wagtail","White Wagtail" , "White_Thraoted_Kingfisher"
+    )), scales = "free", ncol=3)+
   labs(x = "Year", y = "Estimated Density per 500m") +
-  theme_bw()
+  theme_bw() + theme(axis.title = element_text(size=16), axis.text = element_text(size=10),
+                   strip.text.x = element_text(size = 10))
 
-ggsave("./Results/All_species_abundance_new.jpeg", width=12, height=9, units = "in", dpi=300)  
+ggsave("All_species_abundance_new_2804.jpeg", width=9, height=9, units = "in", dpi=300)  
   
   ggplot(coef_cmbnd, aes(x= variable, y = Estimate))+
     geom_errorbar(aes(ymin = Estimate -1.96*SE,
@@ -188,12 +195,50 @@ ggsave("./Results/All_species_abundance_new.jpeg", width=12, height=9, units = "
                   width = 0) +
     geom_point(size = 2) +
     geom_hline(yintercept = 0, linetype = "dashed")+
-    facet_wrap(~species, scales = "free")+
+    facet_wrap(~factor(species, levels =c("Brown_Dipper"   ,   "Crested_Kingfisher" , "Little_Forktail" ,         
+                                          "Plumbeous_Water_Redstart" , "Spotted_Forktail" ,  "White_capped_Redstart" ,     
+                                          "Blue_Whistling_Thrush" , "Common_Kingfisher" , "Grey_Wagtail" ,                
+                                          "White browed Wagtail","White Wagtail" , "White_Thraoted_Kingfisher"
+                                          )), scales = "free", ncol=3)+
     labs(x = "Variable", y = "Coefficient Estimate") +
     coord_cartesian(ylim = c(-4,4))+
     theme_bw()+
     theme(axis.title = element_text(size=16), axis.text = element_text(size=10),
-          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0))
+          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0),
+          strip.text.x = element_text(size = 10))
   
-  ggsave("./Results/All_species_coef_new.jpeg", width=12, height=9, units = "in", dpi=300)  
+  ggsave("All_species_coef_new_2804.jpeg", width=9, height=12, units = "in", dpi=300)  
   
+  #####################################################
+  ####### Prediction plot
+  
+  # Predicting requires all covariates, so let's hold the other covariates constant at their mean value
+  nmix_alt_newdata <- data.frame(alt = seq(300, 3300, by = 50),
+                                 wor = mean(site_cov$wor), # hold other variables constant
+                                 flow = mean(site_cov$flow)) # hold other variables constant
+  
+  # Model-averaged prediction of occupancy and confidence interval
+  nmix_alt_pred_ck <- modavgPred(list(nmix_full = dynamic_nmix_mod_p),
+                                    # c.hat =    # to change variance inflation factor, default = 1) 
+                                    parm.type = "lambda", # psi = occupancy
+                                    newdata = nmix_alt_newdata)[c("mod.avg.pred",  "lower.CL", "upper.CL")]
+  
+  # Put prediction, confidence interval, and covariate values together in a data frame
+  nmix_alt_pred_df_ck <- data.frame(Predicted = nmix_alt_pred_ck$mod.avg.pred,
+                                       lower = nmix_alt_pred_ck$lower.CL,
+                                       upper = nmix_alt_pred_ck$upper.CL,
+                                       nmix_alt_newdata)
+  
+  # Plot the relationship
+  nmix_alt_pred_pwr_plot <- ggplot(nmix_alt_pred_df_pwr, aes(x = alt, y = Predicted)) +
+    geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.5, linetype = "dashed") +
+    geom_path(size = 1) +
+    labs(x = "Altitude", y = "Abundance Estimate per site", title = "Plumbeous Water Redstart") +
+    theme_bw() +
+    coord_cartesian(ylim = c(0,8)) +
+    theme(text = element_text(family = "HelveticaNeue", colour = "black", size=18),
+          axis.text = element_text(colour = "black", size=14))
+  nmix_alt_pred_ck_plot
+
+  cowplot::plot_grid(nmix_alt_pred_pwr_plot, nmix_alt_pred_sf_plot, nmix_alt_pred_ck_plot)  
+ggsave("Sp_elev_plot.jpeg", width = 12, height = 9, units = "in", dpi=300)  
