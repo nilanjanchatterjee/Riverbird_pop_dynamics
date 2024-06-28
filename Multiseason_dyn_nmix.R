@@ -348,3 +348,38 @@ all_pop_trend %>%
   ) +
   ggtitle("A Violin wrapping a boxplot") +
   xlab("")
+
+#### Analysing the population growth rate for different species
+dat<- list()
+poptry<-for(i in (unique(abd_cmbnd$species)))
+{
+  tempdat <- abd_cmbnd |> filter(species ==i)
+  
+  print( c((tempdat$mean[tempdat$year == 2018])/(tempdat$mean[tempdat$year == 2014]),
+                          ((tempdat$mean[tempdat$year == 2018])/(tempdat$mean[tempdat$year == 2014]))^0.2,
+                         ((tempdat$V1[tempdat$year == 2018])/(tempdat$V1[tempdat$year == 2014]))^0.2,
+                           ((tempdat$V2[tempdat$year == 2018])/(tempdat$V2[tempdat$year == 2014]))^0.2
+                                                   ))
+}
+
+
+rvrbrd_pop <-read.csv("C:/Users/nchatterjee/Downloads/Riverbird_pop_trend.csv")
+
+rvrbrd_pop <- rvrbrd_pop[order(rvrbrd_pop$pop_trend),]
+rvrbrd_pop$species <- factor(rvrbrd_pop$species, levels = rvrbrd_pop$species) 
+
+ggplot(rvrbrd_pop, aes(y= species)) + 
+  geom_point(aes(x=pop_trend, col = as.factor(group)), size=3)+
+  geom_linerange(aes(xmin=ucl_trend, xmax = lcl_trend, col = as.factor(group)), size=1.5)+
+  labs(x= "Percentage Change", y= "Species")+
+  scale_x_continuous(breaks = c(0.8,0.85,0.9,0.95,1,1.05,1.1),
+                     labels = c("-20%","-15%", "-10%", "-5%", "0%", "5%", "10%"))+
+  scale_color_manual(values = c( "#FC4E07", "#E7B800" ,"#00AFBB"))+
+  theme_bw() +
+  geom_vline(xintercept = 1, linetype="dashed", linewidth=1)+
+  theme(axis.title = element_text(size=16),
+        axis.text = element_text(size=12),
+        legend.position = "none")
+
+ggsave("River_pop_trend_final.jpeg", , width = 9, height = 6, units = "in", dpi=300)
+
