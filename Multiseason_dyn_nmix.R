@@ -6,7 +6,7 @@ library(unmarked) # for occupancy models
 library(AICcmodavg) # For GOF tests
 
 # Load detection history (43 sites with 3 visits each for 5 years)
-pwr_det_hist <- read.csv("./Data/PWR_multi.csv",header=T) 
+pwr_det_hist <- read.csv("PWR_multi.csv",header=T) 
 bd_det_hist <- read.csv("./Data/BD_multi.csv",header=T) 
 wcr_det_hist <- read.csv("./Data/WCR_multi.csv",header=T) 
 bwt_det_hist <- read.csv("./Data/BWT_multi.csv",header=T) 
@@ -101,6 +101,7 @@ sp_sum_zip <- list()
 all_sp_poptrend <- list()
 
 setwd("./Data/")
+pwr_det_hist <- read.csv("PWR_multi.csv",header=T) 
 # Load covariate data
 site_cov <- data.frame(alt=pwr_det_hist$Alt,flow=(pwr_det_hist$Flow),wor=pwr_det_hist$WoR )
 dynamic_nmix_mod_p <-list()
@@ -161,20 +162,20 @@ abd_cmbnd <-read.csv( "./Results/All_species_abundance_combined.csv")
 coef_cmbnd <-do.call(rbind, sp_sum)
 colnames(coef_cmbnd)[1] <- c("species")
 coef_cmbnd$species<- gsub("_multi.csv", "",coef_cmbnd$species)
-coef_cmbnd$variable <- rep(rownames(coef_cmbnd)[1:8], 12)
+coef_cmbnd$variable <- rep(rownames(coef_cmbnd)[1:7], 12)
 coef_cmbnd$variable <- gsub("det", "det_prob",coef_cmbnd$variable)
 coef_cmbnd$variable <- gsub("lambda.(Intercept)", "lambda_intercept",coef_cmbnd$variable, fixed = TRUE)
 coef_cmbnd$variable <- gsub("lambda_elevation", "lambda_elev",coef_cmbnd$variable, fixed = TRUE)
-coef_cmbnd$species[coef_cmbnd$species=="BD"] <- "Brown_Dipper"
-coef_cmbnd$species[coef_cmbnd$species=="WTK"] <- "White-Throated\nKingfisher"
-coef_cmbnd$species[coef_cmbnd$species=="BWT"] <- "Blue-Whistling\nThrush"
-coef_cmbnd$species[coef_cmbnd$species=="Common_Kingfisher"] <- "Crested\nKingfisher"
-coef_cmbnd$species[coef_cmbnd$species=="CK"] <- "Common\nKingfisher"
-coef_cmbnd$species[coef_cmbnd$species=="GW"] <- "Grey_Wagtail"
-coef_cmbnd$species[coef_cmbnd$species=="LF"] <- "Little_Forktail"
-coef_cmbnd$species[coef_cmbnd$species=="PWR"] <- "Plumbeous\nWater Redstart"
-coef_cmbnd$species[coef_cmbnd$species=="SF"] <- "Spotted\nForktail"
-coef_cmbnd$species[coef_cmbnd$species=="WCR"] <- "White-capped\nRedstart"
+coef_cmbnd$species[coef_cmbnd$species=="Brown_Dipper"] <- "Brown Dipper"
+coef_cmbnd$species[coef_cmbnd$species=="White_Throated_Kingfisher"] <- "White-throated\nKingfisher"
+coef_cmbnd$species[coef_cmbnd$species=="Blue_Whistling_Thrush"] <- "Blue-whistling\nThrush"
+coef_cmbnd$species[coef_cmbnd$species=="Common_Kingfisher"] <- "Common\nKingfisher"
+coef_cmbnd$species[coef_cmbnd$species=="Crested_Kingfisher"] <- "Crested\nKingfisher"
+coef_cmbnd$species[coef_cmbnd$species=="Grey_Wagtail"] <- "Grey Wagtail"
+coef_cmbnd$species[coef_cmbnd$species=="Little_Forktail"] <- "Little Forktail"
+coef_cmbnd$species[coef_cmbnd$species=="Plumbeous_Water_Redstart"] <- "Plumbeous\nWater Redstart"
+coef_cmbnd$species[coef_cmbnd$species=="Spotted_Forktail"] <- "Spotted\nForktail"
+coef_cmbnd$species[coef_cmbnd$species=="White_capped_Redstart"] <- "White-capped\nRedstart"
 coef_cmbnd$species[coef_cmbnd$species=="White browed Wagtail"] <- "White-browed\nWagtail"
 write.csv(coef_cmbnd, "./Results/All_species_coef_combined.csv", row.names = F)
 
@@ -202,25 +203,39 @@ write.csv(coef_cmbnd_zip, "./Results/All_species_coef_zip_combined.csv", row.nam
 
 ggsave("All_species_abundance_new_2804.jpeg", width=9, height=9, units = "in", dpi=300)  
   
-  ggplot(coef_cmbnd, aes(x= variable, y = Estimate))+
-    geom_errorbar(aes(ymin = Estimate -1.96*SE,
-                      ymax = Estimate +1.96*SE),
-                  width = 0) +
-    geom_point(size = 2) +
-    geom_hline(yintercept = 0, linetype = "dashed")+
-    facet_wrap(~factor(species, levels =c("Brown_Dipper"   ,   "Crested_Kingfisher" , "Little_Forktail" ,         
-                                          "Plumbeous_Water_Redstart" , "Spotted_Forktail" ,  "White_capped_Redstart" ,     
-                                          "Blue_Whistling_Thrush" , "Common_Kingfisher" , "Grey_Wagtail" ,                
-                                          "White browed Wagtail","White Wagtail" , "White_Thraoted_Kingfisher"
-                                          )), scales = "free", ncol=3)+
-    labs(x = "Variable", y = "Coefficient Estimate") +
-    coord_cartesian(ylim = c(-4,4))+
-    theme_bw()+
-    theme(axis.title = element_text(size=16), axis.text = element_text(size=10),
-          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0),
-          strip.text.x = element_text(size = 10))
+  # ggplot(coef_cmbnd, aes(x= variable, y = Estimate))+
+  #   geom_errorbar(aes(ymin = Estimate -1.96*SE,
+  #                     ymax = Estimate +1.96*SE),
+  #                 width = 0) +
+  #   geom_point(size = 2) +
+  #   geom_hline(yintercept = 0, linetype = "dashed")+
+  #   facet_wrap(~factor(species, levels =c("Brown_Dipper"   ,   "Crested_Kingfisher" , "Little_Forktail" ,         
+  #                                         "Plumbeous_Water_Redstart" , "Spotted_Forktail" ,  "White_capped_Redstart" ,     
+  #                                         "Blue_Whistling_Thrush" , "Common_Kingfisher" , "Grey_Wagtail" ,                
+  #                                         "White browed Wagtail","White Wagtail" , "White_Thraoted_Kingfisher"
+  #                                         )), scales = "free", ncol=3)+
+  #   labs(x = "Variable", y = "Coefficient Estimate") +
+  #   coord_cartesian(ylim = c(-4,4))+
+  #   theme_bw()+
+  #   theme(axis.title = element_text(size=16), axis.text = element_text(size=10),
+  #         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0),
+  #         strip.text.x = element_text(size = 10))
+  # 
+  # ggsave("All_species_coef_new_2804.jpeg", width=9, height=12, units = "in", dpi=300)  
   
-  ggsave("All_species_coef_new_2804.jpeg", width=9, height=12, units = "in", dpi=300)  
+  ###Final plot for coefficient
+  coef_cmbnd <- read.csv("./Results/All_species_coef_combined.csv")
+  coef_cmbnd$species[coef_cmbnd$species=="Brown_Dipper"] <- "Brown Dipper"
+  coef_cmbnd$species[coef_cmbnd$species=="White_Thraoted_Kingfisher"] <- "White-throated\nKingfisher"
+  coef_cmbnd$species[coef_cmbnd$species=="Blue_Whistling_Thrush"] <- "Blue-whistling\nThrush"
+  coef_cmbnd$species[coef_cmbnd$species=="Common_Kingfisher"] <- "Common\nKingfisher"
+  coef_cmbnd$species[coef_cmbnd$species=="Crested_Kingfisher"] <- "Crested\nKingfisher"
+  coef_cmbnd$species[coef_cmbnd$species=="Grey_Wagtail"] <- "Grey Wagtail"
+  coef_cmbnd$species[coef_cmbnd$species=="Little_Forktail"] <- "Little Forktail"
+  coef_cmbnd$species[coef_cmbnd$species=="Plumbeous_Water_Redstart"] <- "Plumbeous\nWater Redstart"
+  coef_cmbnd$species[coef_cmbnd$species=="Spotted_Forktail"] <- "Spotted\nForktail"
+  coef_cmbnd$species[coef_cmbnd$species=="White_capped_Redstart"] <- "White-capped\nRedstart"
+  coef_cmbnd$species[coef_cmbnd$species=="White browed Wagtail"] <- "White-browed\nWagtail"
   
   coef_cmbnd |> filter(grepl("lambda", variable)) |> mutate(dummy = "lambda") |>
     ggplot( aes(y= dummy, x = Estimate))+
@@ -229,14 +244,14 @@ ggsave("All_species_abundance_new_2804.jpeg", width=9, height=9, units = "in", d
                   width = 0) +
     geom_point(size = 2) +
     geom_vline(xintercept = 0, linetype = "dashed")+
-    facet_grid(factor(species, levels =c("Brown_Dipper"   ,   "Crested\nKingfisher" , "Little_Forktail" ,         
+    facet_grid(factor(species, levels =c("Brown Dipper" , "Crested\nKingfisher" , "Little Forktail" ,         
                                           "Plumbeous\nWater Redstart" , "Spotted\nForktail" ,  "White-capped\nRedstart" ,     
-                                          "Blue-Whistling\nThrush" , "Common\nKingfisher" , "Grey_Wagtail" ,                
-                                          "White-browed\nWagtail","White Wagtail" , "White-Throated\nKingfisher"
-    )) ~variable, space = "fixed", scales = "free", switch = "y",
+                                          "Blue-whistling\nThrush" , "Common\nKingfisher" , "Grey Wagtail" ,                
+                                          "White-browed\nWagtail","White Wagtail" , "White-throated\nKingfisher"
+                )) ~variable, space = "fixed", scales = "free", switch = "y",
     labeller = labeller(variable = c("lambda_intrcpt" = "Intercept",
                              "lambda.scale(alt)" = "Elevation",
-                             "lambda.flow" = "Flow-score",
+                             "lambda.flow" = "Flow character",
                              "lambda.wor" = "River width")))+
     labs(x = "Coefficient Estimate", y = "Species") +
     coord_cartesian(ylim = c(-4,4))+
@@ -244,7 +259,8 @@ ggsave("All_species_abundance_new_2804.jpeg", width=9, height=9, units = "in", d
     theme(axis.title = element_text(size=16), axis.text.y = element_blank(),
           axis.text.x = element_text(size=8),
           strip.text.x = element_text(size = 10))
-  ggsave("All_species_coef_new_2606.jpeg", width=8, height=12, units = "in", dpi=300)  
+  
+  ggsave("./Results/All_species_coef_new_1301.jpeg", width=8, height=12, units = "in", dpi=300)  
   
   #####################################################
   ####### ---- Prediction plot ----
@@ -272,23 +288,26 @@ ggsave("All_species_abundance_new_2804.jpeg", width=9, height=9, units = "in", d
   
   nmix_alt_pred_all <- do.call(rbind, nmix_alt_pred_df)
   nmix_alt_pred_all$species<- gsub("_multi.csv", "",nmix_alt_pred_all$species)
-  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="BD"] <- "Brown_Dipper"
-  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="WTK"] <- "White_Throated_Kingfisher"
-  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="BWT"] <- "Blue_Whistling_Thrush"
-  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="CK"] <- "Crested_Kingfisher"
-  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="GW"] <- "Grey_Wagtail"
-  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="LF"] <- "Little_Forktail"
-  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="PWR"] <- "Plumbeous_Water_Redstart"
-  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="SF"] <- "Spotted_Forktail"
-  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="WCR"] <- "White_capped_Redstart"
-  # Plot the relationship
+  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="BD"] <- "Brown Dipper"
+  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="WTK"] <- "White-throated Kingfisher"
+  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="BWT"] <- "Blue Whistling Thrush"
+  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="CK"] <- "Crested Kingfisher"
+  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="Common_Kingfisher"] <- "Common Kingfisher"
+  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="GW"] <- "Grey Wagtail"
+  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="LF"] <- "Little Forktail"
+  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="PWR"] <- "Plumbeous Water Redstart"
+  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="SF"] <- "Spotted Forktail"
+  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="WCR"] <- "White-capped Redstart"
+  nmix_alt_pred_all$species[nmix_alt_pred_all$species=="White browed Wagtail"] <- "White-browed Wagtail"
+  
+    # Plot the relationship
   nmix_alt_pred_plot <- ggplot(nmix_alt_pred_all, aes(x = alt, y = Predicted)) +
     geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.5, linetype = "dashed") +
     geom_path(size = 1) +
-    facet_wrap(~factor(species, levels =c("Brown_Dipper"  ,   "Crested_Kingfisher" , "Little_Forktail" ,         
-                                          "Plumbeous_Water_Redstart" , "Spotted_Forktail" ,  "White_capped_Redstart" ,     
-                                          "Blue_Whistling_Thrush" , "Common_Kingfisher" , "Grey_Wagtail" ,                
-                                          "White browed Wagtail","White Wagtail" , "White_Throated_Kingfisher"
+    facet_wrap(~factor(species, levels =c("Brown Dipper"  ,   "Crested Kingfisher" , "Little Forktail" ,         
+                                          "Plumbeous Water Redstart" , "Spotted Forktail" ,  "White-capped Redstart" ,     
+                                          "Blue Whistling Thrush" , "Common Kingfisher" , "Grey Wagtail" ,                
+                                          "White-browed Wagtail","White Wagtail" , "White-throated Kingfisher"
     )), scales = "free", ncol=3)+
     labs(x = "Altitude (in meters)", y = "Abundance Estimate per site") +
     theme_bw() +
@@ -381,5 +400,5 @@ ggplot(rvrbrd_pop, aes(y= species)) +
         axis.text = element_text(size=12),
         legend.position = "none")
 
-ggsave("River_pop_trend_final.jpeg", , width = 9, height = 6, units = "in", dpi=300)
+ggsave("River_pop_trend_final.jpeg",  width = 9, height = 6, units = "in", dpi=300)
 
