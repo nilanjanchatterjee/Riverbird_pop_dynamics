@@ -250,7 +250,7 @@ ggsave("All_species_abundance_new_2804.jpeg", width=9, height=9, units = "in", d
                                           "White-browed\nWagtail","White Wagtail" , "White-throated\nKingfisher"
                 )) ~variable, space = "fixed", scales = "free", switch = "y",
     labeller = labeller(variable = c("lambda_intrcpt" = "Intercept",
-                             "lambda.scale(alt)" = "Elevation",
+                             "lambda_elev" = "Elevation",
                              "lambda.flow" = "Flow character",
                              "lambda.wor" = "River width")))+
     labs(x = "Coefficient Estimate", y = "Species") +
